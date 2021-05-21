@@ -11,6 +11,8 @@
 #include "QMouseEvent"
 #include "QMessageBox"
 #include "time.h"
+#include "qcustomplot.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -25,15 +27,23 @@ public:
     QString gboName;
     QString idxName;
     QImage img;
+    QImage imgOut;
     QMouseEvent *event;
-    QPoint localCursor;
+    QPoint Cursor;
     QMessageBox ErrorMsg;
-    QPixmap frame;
+    int rowsCount;
+    int colsCount;
     int wheight;
     int wwidth;
     int iheight;
     int iwidth;
-    int frameNum;
+    QCPItemTracer *reliefTracer;
+    QCPItemTracer *trekTracer;
+    QVector<double> rows;
+    QVector<double> depths;
+    QVector<double> heights;
+    QVector<double> lats;
+    QVector<double> lons;
     #pragma pack(push, 4)
     struct idx_header{
         short verMajor;
@@ -70,19 +80,24 @@ public:
     #pragma pack(pop)
     idx_data IdxData;
     idx_header IdxHeader;
-    FILE *IdxFile = NULL;
+    FILE *IdxFile;
     uchar buffer[100];
     int hp;
 private slots:
     void on_actionOpen_2_triggered();
-    void loadFile(const QString &);
-    void mousePressEvent(QMouseEvent *);
-
-    void on_prevFrame_pressed();
-
-    void on_nextFrame_pressed();
+    void on_tableWidget_cellClicked(int row);
 
 private:
     Ui::MainWindow *ui;
+    void loadImage(const QString &);
+    void mouseEvent(QMouseEvent *);
+    void loadData();
+    void drawRelief(QVector<double> y1, QVector<double> y2, QVector<double> x, int N);
+    void drawTrek(QVector<double> x, QVector<double> y);
+    void drawHist(int line);
+    void reliefEvent(QMouseEvent *);
+protected:
+    void mousePressEvent(QMouseEvent *);
+    void mouseMoveEvent(QMouseEvent *);
 };
 #endif // MAINWINDOW_H
