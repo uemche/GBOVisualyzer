@@ -17,13 +17,9 @@ MainWindow::MainWindow(QWidget *parent)
     imgOut = QImage(NULL);
     IdxFile = NULL;
     ui->setupUi(this);
-    std::cout << ui->menubar->sizeHint().height() << this->font().styleName().toLocal8Bit().data() << std::endl;
     setMouseTracking(true);
     connect(ui->reliefPlot, &QCustomPlot::mousePress, this, &MainWindow::reliefEvent);
     connect(ui->reliefPlot, &QCustomPlot::mouseMove, this, &MainWindow::reliefEvent);
-    //connect(ui->scrollArea, &QWidget::mousePressEvent, this, &MainWindow::mouseEvent);
-    //connect(ui->trekPlot, &QCustomPlot::mousePress, this, &MainWindow::trekPress);
-    //connect(ui->trekPlot, &QCustomPlot::mouseMove, this, &MainWindow::trekMove);
     reliefTracer = new QCPItemTracer(ui->reliefPlot);
     trekTracer = new QCPItemTracer(ui->trekPlot);
     wwidth = this->width();
@@ -94,12 +90,21 @@ void MainWindow::on_actionOpen_2_triggered()
         ui->reliefPlot->clearGraphs();
         ui->trekPlot->clearGraphs();
         ui->histoPlot->clearGraphs();
+        ui->reliefPlot->axisRect()->setBackground(Qt::white);
         ui->reliefPlot->replot();
         ui->trekPlot->replot();
         ui->histoPlot->replot();
         ui->label->hide();
         ui->scrollArea->hide();
         ui->timeCreate->clear();
+        ui->spacingLine->clear();
+        depths.clear();
+        heights.clear();
+        rows.clear();
+        lats.clear();
+        lons.clear();
+        spacing.clear();
+
     }
 }
 
@@ -119,6 +124,8 @@ void MainWindow::loadImage(const QString &fileName)
 
 void MainWindow::loadData()
 {
+    if(IdxFile != NULL)
+        fclose(IdxFile);
     IdxFile = fopen(idxName.toLocal8Bit().data(), "rb");
     fseek(IdxFile,20,0);
     fread(buffer, 4, 1, IdxFile);
@@ -138,6 +145,9 @@ void MainWindow::loadData()
     rows.clear();
     lats.clear();
     lons.clear();
+    spacing.clear();
+    QVector<time_t> times;
+    QVector<float> speeds;
     for(int i = 0; fread(&IdxData, sizeof(idx_data), 1, IdxFile)==1; i++)
     {
         t = localtime(&IdxData.time);
@@ -172,6 +182,14 @@ void MainWindow::loadData()
         lats.append(IdxData.lat*180.0/M_PI);
         lons.append(IdxData.lon*180.0/M_PI);
         rows.append(i);
+        times.append(IdxData.time);
+        speeds.append(IdxData.speed);
+        if(i == 0){
+            spacing.append(0);
+        }
+        else{
+            spacing.append(spacing[i-1] + speeds[i-1]*(times[i] - times[i-1]));
+        }
     }
     drawRelief(depths, heights, rows, rowsCount);
     drawTrek(lons, lats);
@@ -180,6 +198,7 @@ void MainWindow::loadData()
     ui->reliefPlot->replot();
     trekTracer->setGraphKey(lons[0]);
     ui->trekPlot->replot();
+    ui->spacingLine->setText(QString("%1").arg(spacing[0],0,'f',4));
     fclose(IdxFile);
 }
 
@@ -194,10 +213,10 @@ void MainWindow::drawRelief(QVector<double> y1, QVector<double> y2, QVector<doub
     ui->reliefPlot->addGraph();
     ui->reliefPlot->graph(1)->setPen(QPen(Qt::red));
     ui->reliefPlot->graph(1)->setData(x, y1);
-    ui->reliefPlot->axisRect()->setBackground(Qt::gray);
     reliefTracer->setGraph(ui->reliefPlot->graph(1));
     ui->reliefPlot->addLayer("abovemain", ui->reliefPlot->layer("main"), QCustomPlot::limAbove);
     reliefTracer->setLayer("abovemain");
+    ui->reliefPlot->axisRect()->setBackground(Qt::gray);
     ui->reliefPlot->xAxis->setRange(0, N);
     ui->reliefPlot->yAxis->setRange(min, 0);
     ui->reliefPlot->yAxis->setLabel("Метры (м)");
@@ -277,6 +296,7 @@ void MainWindow::mouseEvent(QMouseEvent *event)
         }
         if (0 < Cursor.x() && Cursor.x() < ui->scrollArea->width()-20 && ui->menubar->sizeHint().height() < Cursor.y() && Cursor.y()< ui->scrollArea->height() + ui->menubar->sizeHint().height() - 1){
             ui->tableWidget->selectRow(-(ui->label->y() - Cursor.y()+ui->menubar->sizeHint().height()+1));
+            ui->tableWidget->setFocus();
             reliefTracer->setGraphKey(-(ui->label->y() - Cursor.y()+ui->menubar->sizeHint().height()+1));
             ui->reliefPlot->replot();
             trekTracer->setGraphKey(lons[-(ui->label->y() - Cursor.y()+ui->menubar->sizeHint().height()+1)]);
@@ -285,6 +305,7 @@ void MainWindow::mouseEvent(QMouseEvent *event)
             paint.end();
             ui->label->setPixmap(px);
             drawHist(-(ui->label->y() - Cursor.y()+21));
+            ui->spacingLine->setText(QString("%1").arg(spacing[-(ui->label->y() - Cursor.y()+21)],0,'f',4));
         }
     } catch (int a) {
         if (a == -1){
@@ -302,38 +323,42 @@ void MainWindow::reliefEvent(QMouseEvent *event)
         double coordX = ui->reliefPlot->xAxis->pixelToCoord(event->pos().x());
         QPixmap px = QPixmap::fromImage(imgOut);
         QPainter paint (&px);
-        if(coordX >= 0 && coordX < IdxHeader.total_str){
+        if(coordX >= 0 && coordX < IdxHeader.total_str && spacing.length() > 0){
             reliefTracer->setGraphKey(coordX);
             ui->reliefPlot->replot();
             trekTracer->setGraphKey(lons[coordX]);
             ui->trekPlot->replot();
             ui->tableWidget->selectRow(((int) coordX));
+            ui->tableWidget->setFocus();
             paint.setPen(Qt::red);
             paint.drawLine(0,((int) coordX), iwidth,((int) coordX));
             paint.end();
             ui->scrollArea->verticalScrollBar()->setValue(((int) coordX)-100);
             ui->label->setPixmap(px);
             drawHist(coordX);
+            ui->spacingLine->setText(QString("%1").arg(spacing[coordX],0,'f',4));
         }
     }
 }
 
 void MainWindow::on_tableWidget_cellClicked(int row)
 {
-    QPixmap px = QPixmap::fromImage(imgOut);
-    QPainter paint (&px);
-    reliefTracer->setGraphKey(row);
-    ui->reliefPlot->replot();
-    trekTracer->setGraphKey(lons[row]);
-    ui->trekPlot->replot();
-    ui->tableWidget->selectRow(row);
-    paint.setPen(Qt::red);
-    paint.drawLine(0, row, iwidth, row);
-    paint.end();
-    ui->scrollArea->verticalScrollBar()->setValue(row-100);
-    ui->label->setPixmap(px);
-    drawHist(row);
-
+    if(spacing.length()>0){
+        QPixmap px = QPixmap::fromImage(imgOut);
+        QPainter paint (&px);
+        reliefTracer->setGraphKey(row);
+        ui->reliefPlot->replot();
+        trekTracer->setGraphKey(lons[row]);
+        ui->trekPlot->replot();
+        ui->tableWidget->selectRow(row);
+        paint.setPen(Qt::red);
+        paint.drawLine(0, row, iwidth, row);
+        paint.end();
+        ui->scrollArea->verticalScrollBar()->setValue(row-100);
+        ui->label->setPixmap(px);
+        drawHist(row);
+        ui->spacingLine->setText(QString("%1").arg(spacing[row],0,'f',4));
+    }
 }
 
 void MainWindow::drawHist(int line){

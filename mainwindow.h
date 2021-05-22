@@ -44,6 +44,7 @@ public:
     QVector<double> heights;
     QVector<double> lats;
     QVector<double> lons;
+    QVector<double> spacing;
     #pragma pack(push, 4)
     struct idx_header{
         short verMajor;
