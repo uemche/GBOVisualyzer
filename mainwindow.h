@@ -85,7 +85,7 @@ public:
     uchar buffer[100];
     int hp;
 private slots:
-    void on_actionOpen_2_triggered();
+    void on_actionOpen_triggered();
     void on_tableWidget_cellClicked(int row);
 
 private:

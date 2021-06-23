@@ -66,7 +66,7 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::on_actionOpen_2_triggered()
+void MainWindow::on_actionOpen_triggered()
 {
     try {
         gboName = QFileDialog::getOpenFileName(this, "Open data","","*.gbo");
@@ -93,6 +93,7 @@ void MainWindow::on_actionOpen_2_triggered()
         ui->reliefPlot->axisRect()->setBackground(Qt::white);
         ui->reliefPlot->replot();
         ui->trekPlot->replot();
+        ui->histoPlot->xAxis->setTicks(false);
         ui->histoPlot->replot();
         ui->label->hide();
         ui->scrollArea->hide();
@@ -104,7 +105,7 @@ void MainWindow::on_actionOpen_2_triggered()
         lats.clear();
         lons.clear();
         spacing.clear();
-
+        this->setWindowTitle("GBOVisualyzer");
     }
 }
 
@@ -119,14 +120,21 @@ void MainWindow::loadImage(const QString &fileName)
         ui->label->setPixmap(QPixmap::fromImage(imgOut));
         ui->scrollArea->setBackgroundRole(QPalette::Dark);
         ui->scrollArea->setWidget(ui->label);
+        QPixmap px = QPixmap::fromImage(imgOut);
+        QPainter paint (&px);
+        paint.setPen(Qt::red);
+        paint.drawLine(0,0, iwidth,0);
+        paint.end();
+        ui->scrollArea->verticalScrollBar()->setValue(0);
+        ui->label->setPixmap(px);
     }
 }
 
 void MainWindow::loadData()
 {
-    if(IdxFile != NULL)
+    /*if(IdxFile != NULL)
         fclose(IdxFile);
-    IdxFile = fopen(idxName.toLocal8Bit().data(), "rb");
+    IdxFile = fopen(idxName.toLocal8Bit().data(), "rb");*/
     fseek(IdxFile,20,0);
     fread(buffer, 4, 1, IdxFile);
     hp = *((int *)buffer);
@@ -194,11 +202,20 @@ void MainWindow::loadData()
     drawRelief(depths, heights, rows, rowsCount);
     drawTrek(lons, lats);
     ui->tableWidget->selectRow(0);
+    ui->tableWidget->setFocus();
     reliefTracer->setGraphKey(0);
     ui->reliefPlot->replot();
     trekTracer->setGraphKey(lons[0]);
     ui->trekPlot->replot();
     ui->spacingLine->setText(QString("%1").arg(spacing[0],0,'f',4));
+    QSharedPointer<QCPAxisTickerText> textTicker1(new QCPAxisTickerText);
+    ui->histoPlot->xAxis->setTicks(true);
+    for(int i = -IdxHeader.spl/2; i <= IdxHeader.spl/2; i+=IdxHeader.spl/10){
+        textTicker1->addTick(i+IdxHeader.spl/2, QString("%1").arg(i));
+    }
+    ui->histoPlot->xAxis->setTicker(textTicker1);
+    QString title = QString("GBOVisualyzer [%1]").arg(gboName);
+    this->setWindowTitle(title);
     fclose(IdxFile);
 }
 
@@ -240,11 +257,11 @@ void MainWindow::drawTrek(QVector<double> x, QVector<double> y)
     double grad, minutes, seconds;
     char buff[100];
     for(double i = (minX+maxX)/2.0 - dif*0.5; i <= (minX+maxX)/2.0 + dif*0.5; i+=dif/3.0){
-        grad = floor(i*6000)/6000;
+        grad = floor(i*6000.0)/6000.0;
         minutes = modf(grad, &grad)*60.0;
         seconds = modf(minutes, &minutes)*60.0;
         sprintf(buff, "%.0f°%.0f'%.2f''", grad, minutes, seconds);
-        textTicker1->addTick(floor(i*6000)/6000, buff);
+        textTicker1->addTick(floor(i*6000.0)/6000.0, buff);
     }
     ui->trekPlot->xAxis->setTicker(textTicker1);
     QSharedPointer<QCPAxisTickerText> textTicker2(new QCPAxisTickerText);

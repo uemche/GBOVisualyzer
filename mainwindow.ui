@@ -27,6 +27,36 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="3">
+     <widget class="QLineEdit" name="timeCreate">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI Semibold</family>
+       </font>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
     <item row="5" column="0">
      <widget class="QCustomPlot" name="histoPlot" native="true">
       <property name="sizePolicy">
@@ -49,7 +79,23 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="2">
+    <item row="3" column="1" rowspan="3" colspan="3">
+     <widget class="QCustomPlot" name="reliefPlot" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>405</width>
+        <height>350</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2" alignment="Qt::AlignRight">
      <widget class="QLabel" name="label_2">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -59,13 +105,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>100</width>
+        <width>150</width>
         <height>20</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>100</width>
+        <width>150</width>
         <height>20</height>
        </size>
       </property>
@@ -75,7 +121,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Время создания</string>
+       <string>Время создания:</string>
       </property>
      </widget>
     </item>
@@ -150,6 +196,35 @@
       </column>
      </widget>
     </item>
+    <item row="4" column="3">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3" alignment="Qt::AlignLeft">
+     <widget class="QLineEdit" name="spacingLine">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>20</height>
+       </size>
+      </property>
+     </widget>
+    </item>
     <item row="3" column="4" rowspan="3">
      <widget class="QCustomPlot" name="trekPlot" native="true">
       <property name="sizePolicy">
@@ -201,60 +276,7 @@
       </widget>
      </widget>
     </item>
-    <item row="4" column="3">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>TextLabel</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <widget class="QLineEdit" name="timeCreate">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>300</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>300</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Segoe UI Semibold</family>
-       </font>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1" rowspan="3" colspan="3">
-     <widget class="QCustomPlot" name="reliefPlot" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>405</width>
-        <height>350</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
+    <item row="1" column="2" alignment="Qt::AlignRight">
      <widget class="QLabel" name="label_3">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -264,13 +286,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>100</width>
+        <width>150</width>
         <height>20</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>100</width>
+        <width>150</width>
         <height>20</height>
        </size>
       </property>
@@ -280,29 +302,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Растояние</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QLineEdit" name="spacingLine">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>300</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>300</width>
-        <height>20</height>
-       </size>
+       <string>Пройденное расстояние, м:</string>
       </property>
      </widget>
     </item>
@@ -321,12 +321,12 @@
     <property name="title">
      <string>Файл</string>
     </property>
-    <addaction name="actionOpen_2"/>
+    <addaction name="actionOpen"/>
    </widget>
    <addaction name="menuOpen"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionOpen_2">
+  <action name="actionOpen">
    <property name="text">
     <string>Открыть</string>
    </property>
